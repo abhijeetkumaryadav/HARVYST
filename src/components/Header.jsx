@@ -9,20 +9,20 @@ export default function Header() {
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <header className="w-full z-50 absolute top-0 left-0">
+    <header className="fixed top-0 left-0 w-full z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="h-24 flex items-center justify-between">
 
           {/* Logo */}
           <NavLink to="/" className="flex items-center" onClick={closeMenu}>
             <img
-              src="/logo.webp"
+              src="/logo.png"
               alt="HARVYST"
               className="h-16 lg:h-20 xl:h-24 w-auto object-contain"
             />
           </NavLink>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation (hidden on mobile) */}
           <nav className="hidden md:flex items-center gap-8 lg:gap-10 text-base font-medium">
             <NavLink
               to="/"
@@ -70,10 +70,10 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Navigation Overlay */}
+      {/* Mobile Navigation Overlay (white background only on overlay) */}
       {isMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-white/95 shadow-lg">
-          <nav className="flex flex-col items-center py-8 gap-6 text-xl font-medium">
+        <div className="md:hidden fixed inset-0 top-24 bg-white/95 backdrop-blur-sm z-40">
+          <nav className="flex flex-col items-center justify-center h-full gap-8 text-xl font-medium">
             <NavLink
               to="/"
               onClick={closeMenu}

@@ -45,7 +45,7 @@ export default function Hero() {
 
   const startAutoSlide = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(goToNext, 5000);
+    intervalRef.current = setInterval(goToNext, 5000); // 5 seconds
   };
 
   const pauseAutoSlide = () => {
@@ -69,7 +69,7 @@ export default function Hero() {
     startAutoSlide();
   }, [currentIndex]);
 
-  // Preload first image
+  // Preload first image for faster initial load
   useEffect(() => {
     if (images[0]) {
       const link = document.createElement('link');
@@ -84,7 +84,12 @@ export default function Hero() {
   }, [isMobile]);
 
   return (
-    <section className="relative w-full h-screen overflow-hidden">
+    <section
+      className="relative w-full h-screen overflow-hidden"
+      onMouseEnter={pauseAutoSlide}
+      onMouseLeave={startAutoSlide}
+    >
+      {/* Background Image */}
       <img
         key={currentIndex}
         src={images[currentIndex]}
