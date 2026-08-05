@@ -1,24 +1,24 @@
 import { useState, useEffect, useRef } from "react";
 
-// Desktop images (6)
+// Desktop images (WebP)
 const desktopImages = [
-  "/hero-bg.png",
-  "/hero-bg2.png",
-  "/hero-bg3.png",
-  "/hero-bg4.png",
-  "/hero-bg5.png",
-  "/hero-bg6.png",
+  "/hero-bg.webp",
+  "/hero-bg2.webp",
+  "/hero-bg3.webp",
+  "/hero-bg4.webp",
+  "/hero-bg5.webp",
+  "/hero-bg6.webp",
 ];
 
-// Mobile images (7)
+// Mobile images (WebP)
 const mobileImages = [
-  "/hero-mbg.png",
-  "/hero-mbg2.png",
-  "/hero-mbg3.png",
-  "/hero-mbg4.png",
-  "/hero-mbg5.png",
-  "/hero-mbg6.png",
-  "/hero-mbg7.png",
+  "/hero-mbg.webp",
+  "/hero-mbg2.webp",
+  "/hero-mbg3.webp",
+  "/hero-mbg4.webp",
+  "/hero-mbg5.webp",
+  "/hero-mbg6.webp",
+  "/hero-mbg7.webp",
 ];
 
 export default function Hero() {
@@ -34,7 +34,7 @@ export default function Hero() {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    handleResize(); // initial check
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -45,7 +45,7 @@ export default function Hero() {
 
   const startAutoSlide = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(goToNext, 9000); // 10 seconds
+    intervalRef.current = setInterval(goToNext, 5000); // 5 seconds
   };
 
   const pauseAutoSlide = () => {
@@ -60,7 +60,7 @@ export default function Hero() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isMobile]); // restart when screen size changes
+  }, [isMobile]);
 
   useEffect(() => {
     if (intervalRef.current) {
@@ -69,9 +69,23 @@ export default function Hero() {
     startAutoSlide();
   }, [currentIndex]);
 
+  // Preload first image for faster initial load
+  useEffect(() => {
+    if (images[0]) {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = images[0];
+      document.head.appendChild(link);
+      return () => {
+        document.head.removeChild(link);
+      };
+    }
+  }, [isMobile]);
+
   return (
     <section
-      className="relative w-full h-screen overflow-hidden group"
+      className="relative w-full h-screen overflow-hidden"
       onMouseEnter={pauseAutoSlide}
       onMouseLeave={startAutoSlide}
     >
@@ -82,6 +96,7 @@ export default function Hero() {
         alt={`Slide ${currentIndex + 1}`}
         className="absolute inset-0 w-full h-full object-cover fade-in select-none"
         draggable={false}
+        loading={currentIndex === 0 ? "eager" : "lazy"}
       />
     </section>
   );
