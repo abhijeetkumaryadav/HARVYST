@@ -23,8 +23,12 @@ const mobileImages = [
 
 export default function Hero() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [prevIndex, setPrevIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [currentOpacity, setCurrentOpacity] = useState(1);
+  const [prevOpacity, setPrevOpacity] = useState(0);
   const intervalRef = useRef(null);
+  const transitionTimeoutRef = useRef(null);
 
   const images = isMobile ? mobileImages : desktopImages;
   const totalSlides = images.length;
@@ -40,12 +44,28 @@ export default function Hero() {
   }, []);
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % totalSlides);
+    const next = (currentIndex + 1) % totalSlides;
+    changeSlide(next);
+  };
+
+  const changeSlide = (newIndex) => {
+    if (newIndex === currentIndex) return;
+    setPrevIndex(currentIndex);
+    setCurrentIndex(newIndex);
+    // Start cross‑fade: previous becomes visible, current becomes hidden
+    setPrevOpacity(1);
+    setCurrentOpacity(0);
+    // After a small delay, fade out previous and fade in current
+    if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+    transitionTimeoutRef.current = setTimeout(() => {
+      setPrevOpacity(0);
+      setCurrentOpacity(1);
+    }, 50);
   };
 
   const startAutoSlide = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(goToNext, 5000); // 5 seconds
+    intervalRef.current = setInterval(goToNext, 5000);
   };
 
   const pauseAutoSlide = () => {
@@ -59,17 +79,18 @@ export default function Hero() {
     startAutoSlide();
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
     };
   }, [isMobile]);
 
+  // Reset cross‑fade when switching between mobile/desktop
   useEffect(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-    startAutoSlide();
-  }, [currentIndex]);
+    setCurrentOpacity(1);
+    setPrevOpacity(0);
+    setPrevIndex(currentIndex);
+  }, [isMobile]);
 
-  // Preload first image for faster initial load
+  // Preload first image
   useEffect(() => {
     if (images[0]) {
       const link = document.createElement('link');
@@ -89,14 +110,22 @@ export default function Hero() {
       onMouseEnter={pauseAutoSlide}
       onMouseLeave={startAutoSlide}
     >
-      {/* Background Image */}
+      {/* Previous Image */}
       <img
-        key={currentIndex}
+        src={images[prevIndex]}
+        alt={`Slide ${prevIndex + 1}`}
+        className="absolute inset-0 w-full h-full object-cover select-none transition-opacity duration-1000"
+        style={{ opacity: prevOpacity }}
+        draggable={false}
+      />
+      {/* Current Image */}
+      <img
         src={images[currentIndex]}
         alt={`Slide ${currentIndex + 1}`}
-        className="absolute inset-0 w-full h-full object-cover fade-in select-none"
+        className="absolute inset-0 w-full h-full object-cover select-none transition-opacity duration-1000"
+        style={{ opacity: currentOpacity }}
         draggable={false}
-        loading={currentIndex === 0 ? "eager" : "lazy"}
+        loading="eager"
       />
     </section>
   );
