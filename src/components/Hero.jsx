@@ -43,24 +43,35 @@ export default function Hero() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const goToNext = () => {
-    const next = (currentIndex + 1) % totalSlides;
-    changeSlide(next);
-  };
-
-  const changeSlide = (newIndex) => {
-    if (newIndex === currentIndex) return;
+  // Cross‑fade transition logic
+  const transitionTo = (newIndex) => {
     setPrevIndex(currentIndex);
     setCurrentIndex(newIndex);
-    // Start cross‑fade: previous becomes visible, current becomes hidden
     setPrevOpacity(1);
     setCurrentOpacity(0);
-    // After a small delay, fade out previous and fade in current
     if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
     transitionTimeoutRef.current = setTimeout(() => {
       setPrevOpacity(0);
       setCurrentOpacity(1);
-    }, 50);
+    }, 80);
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => {
+      const next = (prev + 1) % totalSlides;
+      // Schedule cross‑fade after state update
+      setTimeout(() => {
+        setPrevIndex(prev);
+        setPrevOpacity(1);
+        setCurrentOpacity(0);
+        if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+        transitionTimeoutRef.current = setTimeout(() => {
+          setPrevOpacity(0);
+          setCurrentOpacity(1);
+        }, 80);
+      }, 0);
+      return next;
+    });
   };
 
   const startAutoSlide = () => {
@@ -110,7 +121,7 @@ export default function Hero() {
       onMouseEnter={pauseAutoSlide}
       onMouseLeave={startAutoSlide}
     >
-      {/* Previous Image */}
+      {/* Previous Image (fading out) */}
       <img
         src={images[prevIndex]}
         alt={`Slide ${prevIndex + 1}`}
@@ -118,7 +129,7 @@ export default function Hero() {
         style={{ opacity: prevOpacity }}
         draggable={false}
       />
-      {/* Current Image */}
+      {/* Current Image (fading in) */}
       <img
         src={images[currentIndex]}
         alt={`Slide ${currentIndex + 1}`}
